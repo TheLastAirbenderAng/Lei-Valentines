@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playpen+Sans:wght@700&family=Raleway:wght@700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <div class="hearts-container"></div>
+    <img src="Valentines.png" alt="Valentines Decoration" class="bg-image">
+    <div class="main-wrapper">
+        <div class="greeting">
+            <p>Dearest</p>
+            <p>Ali Lei Lim</p>
+        </div>
+        <div class="container">
+            <div class="content">
+                <h1>WILL YOU BE MY</h1>
+                <h2>VALENTINE?</h2>
+                <div class="buttons">
+                    <button id="yesBtn">Yes</button>
+                    <button id="noBtn">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure? 👉👈</p>
+            <div class="modal-buttons">
+                <button id="modalNo">No, go back</button>
+                <button id="modalYes">Yes, I'm sure</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rejection-screen" class="rejection-screen">
+        <div class="hearts-container-rejection"></div>
+        <img src="Valentines.png" alt="Valentines Decoration" class="bg-image">
+        <div class="rejection-wrapper">
+            <div class="container">
+                <div class="rejection-content">
+                    <p>Thanks for being honest with me, Lei!</p>
+                    <p>I hope we can talk soon.</p>
+                    <p>I'll always be here if you need me.</p>
+                    <p class="signature">- Chin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

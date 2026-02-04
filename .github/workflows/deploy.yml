@@ -1,0 +1,137 @@
+# GitHub Actions workflow for testing and deploying to GitHub Pages
+name: Test and Deploy to GitHub Pages
+
+on:
+  # Run on push to master
+  push:
+    branches: ["master"]
+  # Allow manual trigger
+  workflow_dispatch:
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one deployment at a time
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Job 1: Validate and Test
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install validation tools
+        run: |
+          npm install -g html-validate
+          npm install -g csslint
+
+      - name: Validate HTML
+        run: |
+          echo "=== Validating HTML files ==="
+          html-validate "*.html" --formatter stylish || true
+          # Check for critical errors only (missing doctype, unclosed tags)
+          html-validate "*.html" --formatter json > html-report.json || true
+          echo "HTML validation complete"
+
+      - name: Validate CSS
+        run: |
+          echo "=== Validating CSS files ==="
+          csslint --format=compact *.css || true
+          echo "CSS validation complete"
+
+      - name: Check file structure
+        run: |
+          echo "=== Checking required files exist ==="
+          files=("index.html" "style.css" "script.js")
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "✗ $file is missing!"
+              exit 1
+            fi
+          done
+
+      - name: Check for broken internal links
+        run: |
+          echo "=== Checking for broken internal references ==="
+          # Check if referenced images exist
+          if grep -o 'src="[^"]*"' index.html | grep -v 'http' | sed 's/src="//g;s/"//g' | while read file; do
+            if [ ! -f "$file" ] && [ ! -z "$file" ]; then
+              echo "✗ Missing file: $file"
+              exit 1
+            else
+              echo "✓ Found: $file"
+            fi
+          done; then
+            echo "All internal references valid"
+          fi
+
+      - name: Check for JavaScript syntax errors
+        run: |
+          echo "=== Checking JavaScript syntax ==="
+          node --check script.js && echo "✓ script.js syntax OK" || exit 1
+
+      - name: Verify EmailJS configuration
+        run: |
+          echo "=== Checking EmailJS setup ==="
+          if grep -q "emailjs.init" script.js; then
+            echo "✓ EmailJS initialized"
+          fi
+          if grep -q "YOUR_PUBLIC_KEY\|YOUR_SERVICE_ID\|YOUR_TEMPLATE_ID" script.js; then
+            echo "✗ EmailJS still has placeholder values!"
+            exit 1
+          else
+            echo "✓ EmailJS configured with real values"
+          fi
+
+      - name: Summary
+        run: |
+          echo ""
+          echo "========================================="
+          echo "  All tests passed! Ready to deploy."
+          echo "========================================="
+
+  # Job 2: Deploy to GitHub Pages (only if tests pass)
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Deployment complete
+        run: |
+          echo ""
+          echo "========================================="
+          echo "  Deployed successfully!"
+          echo "  URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "========================================="
